@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Research Grant Timeline</title>
+
+<!-- jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+<style>
+:root {
+  --ink:       #0d1117;
+  --ink-soft:  #3d4a5c;
+  --ink-ghost: #8597ad;
+  --paper:     #f5f3ef;
+  --paper-2:   #edeae3;
+  --cream:     #faf8f5;
+  --line:      #ddd8cf;
+  --accent:    #c0392b;
+  --accent-2:  #1a6b5a;
+  --accent-3:  #8b4513;
+  --gold:      #c9922a;
+  --radius:    16px;
+  --shadow:    0 4px 24px rgba(13,17,23,0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 36px 48px 32px;
+  position: relative;
+  overflow: hidden;
+}
+.masthead::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 90% 50%, rgba(192,57,43,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(26,107,90,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.masthead-inner {
+  max-width: 1340px;
+  margin: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.masthead-left {}
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.masthead h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.05;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.masthead h1 em {
+  font-style: italic;
+  color: rgba(245,243,239,0.55);
+}
+.masthead-sub {
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(245,243,239,0.50);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
+}
+
+/* export buttons */
+.export-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(245,243,239,0.18);
+  background: rgba(245,243,239,0.07);
+  color: var(--cream);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.export-btn:hover {
+  background: rgba(245,243,239,0.16);
+  transform: translateY(-1px);
+}
+.export-btn .ico { font-size: 15px; }
+.export-btn.pdf-btn  { border-color: rgba(192,57,43,0.5);  color: #f07070; }
+.export-btn.png-btn  { border-color: rgba(201,146,42,0.5);  color: #f0c070; }
+.export-btn.jpeg-btn { border-color: rgba(26,107,90,0.5);  color: #70d0b0; }
+
+/* ── PAGE BODY ── */
+.page-body {
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+/* ── ADD TASK CARD ── */
+.form-card {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+}
+.form-card-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 18px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.form-card-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr 200px 200px auto;
+  gap: 14px;
+  align-items: end;
+}
+@media(max-width: 1000px) {
+  .form-grid {
+    grid-template-columns: 60px 1fr 1fr 1fr auto;
+    flex-wrap: wrap;
+  }
+}
+@media(max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-family: 'DM Mono', monospace;
+}
+.field input, .field select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: white;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  height: 44px;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(13,17,23,0.08);
+}
+.field input[type="number"] { -moz-appearance: textfield; }
+.field input[type="number"]::-webkit-outer-spin-button,
+.field input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* task number */
+.task-num-field input {
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+/* month-year selects */
+.month-year-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.month-year-pair select {
+  padding: 11px 8px;
+}
+
+.add-btn {
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 10px;
+  padding: 0 22px;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.18s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.add-btn:hover { background: #232d3d; transform: translateY(-1px); }
+
+/* ── GANTT CARD ── */
+.gantt-card {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: 28px;
+}
+
+#gantt-chart { width: 100%; }
+
+.gantt-header {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  background: var(--ink);
+  color: var(--cream);
+}
+.gantt-header-left {
+  padding: 18px 20px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245,243,239,0.5);
+  border-right: 1px solid rgba(245,243,239,0.08);
+  display: flex;
+  align-items: center;
+}
+.gantt-header-right { overflow: hidden; }
+.timeline { display: flex; width: 100%; }
+.month-cell {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid rgba(245,243,239,0.06);
+  padding: 18px 4px;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(245,243,239,0.55);
+  letter-spacing: 0.06em;
+}
+.month-cell.current-month {
+  color: var(--gold);
+  background: rgba(201,146,42,0.08);
+}
+
+.task-row {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  border-bottom: 1px solid var(--line);
+  min-height: 72px;
+  transition: background 0.12s;
+}
+.task-row:last-child { border-bottom: none; }
+.task-row:hover { background: rgba(13,17,23,0.02); }
+
+.task-name {
+  padding: 14px 20px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.task-num-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink-ghost);
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.task-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+.task-date {
+  font-size: 11px;
+  color: var(--ink-ghost);
+  font-family: 'DM Mono', monospace;
+}
+
+.task-timeline {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--line) 0px,
+    var(--line) 1px,
+    transparent 1px,
+    transparent calc(100% / var(--cols, 12))
+  );
+}
+
+.task-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 36px;
+  border-radius: 8px;
+  color: white;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.20);
+}
+.bar-text {
+  position: relative;
+  z-index: 2;
+  padding-left: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.bar-num {
+  margin-right: 4px;
+  opacity: 0.65;
+}
+
+/* ── TABLE CARD ── */
+.table-card {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.table-card-header {
+  padding: 18px 24px;
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.task-count-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: var(--paper-2);
+  border-radius: 6px;
+  padding: 3px 10px;
+  color: var(--ink-soft);
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--paper-2);
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
+}
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--ink);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(13,17,23,0.02); }
+
+.color-swatch {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+
+.mono { font-family: 'DM Mono', monospace; font-size: 13px; }
+
+.remove-btn {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--accent);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.15s;
+}
+.remove-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--ink-ghost);
+}
+.empty-state p { font-family: 'DM Mono', monospace; font-size: 13px; }
+
+/* ── LOADING ── */
+.saving-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(13,17,23,0.7);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  color: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+.saving-overlay.active { display: flex; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media(max-width: 900px){
+  .masthead { padding: 28px 20px 24px; }
+  .page-body { padding: 20px 14px 40px; }
+  .gantt-header, .task-row { grid-template-columns: 180px 1fr; }
+  .task-name { padding: 12px 14px; }
+  .month-cell { font-size: 9px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SAVING OVERLAY -->
+<div class="saving-overlay" id="savingOverlay">
+  <div class="spinner"></div>
+  <span id="savingLabel">Preparing export…</span>
+</div>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-left">
+      <div class="eyebrow">Research Planning Tool</div>
+      <h1>Grant Project <em>&amp;</em> Timeline</h1>
+      <div class="masthead-sub">Gantt · Milestone Tracking · Progress Overview</div>
+    </div>
+    <div class="export-row">
+      <button class="export-btn pdf-btn"  onclick="exportAs('pdf')"><span class="ico">⬇</span> PDF</button>
+      <button class="export-btn png-btn"  onclick="exportAs('png')"><span class="ico">⬇</span> PNG</button>
+      <button class="export-btn jpeg-btn" onclick="exportAs('jpeg')"><span class="ico">⬇</span> JPEG</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+  <!-- ADD TASK FORM -->
+  <div class="form-card">
+    <div class="form-card-title">Add Task</div>
+    <div class="form-grid">
+
+      <!-- Task # -->
+      <div class="field task-num-field">
+        <label>#</label>
+        <input type="number" id="fNum" value="1" min="1" max="99"/>
+      </div>
+
+      <!-- Task Name -->
+      <div class="field">
+        <label>Task Name</label>
+        <input type="text" id="fName" placeholder="e.g. Literature Review"/>
+      </div>
+
+      <!-- Start -->
+      <div class="field">
+        <label>Start Month</label>
+        <div class="month-year-pair">
+          <select id="fStartMonth"></select>
+          <select id="fStartYear"></select>
+        </div>
+      </div>
+
+      <!-- End -->
+      <div class="field">
+        <label>End Month</label>
+        <div class="month-year-pair">
+          <select id="fEndMonth"></select>
+          <select id="fEndYear"></select>
+        </div>
+      </div>
+
+
+      <!-- Add -->
+      <div class="field">
+        <label style="visibility:hidden">Add</label>
+        <button class="add-btn" onclick="addTask()">+ Add</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GANTT -->
+  <div class="gantt-card" id="capture-area">
+    <div id="gantt-chart"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-card-header">
+      Task Overview
+      <span class="task-count-badge" id="taskCountBadge">0 tasks</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Task Name</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="taskTable"></tbody>
+    </table>
+  </div>
+
+</div><!-- /page-body -->
+
+<script>
+/* ─── DATA ─── */
+let tasks = [
+  { num:1, name:"Literature Review",  start:"2026-01", end:"2026-03", color:"#c0392b" },
+  { num:2, name:"Ethics Approval",    start:"2026-02", end:"2026-04", color:"#1a6b5a" },
+  { num:3, name:"Data Collection",    start:"2026-04", end:"2026-08", color:"#2563eb" },
+  { num:4, name:"Data Analysis",      start:"2026-08", end:"2026-10", color:"#7c3aed" },
+  { num:5, name:"Publication",        start:"2026-10", end:"2026-12", color:"#c9922a" },
+];
+
+const PALETTE = [
+  "#c0392b","#1a6b5a","#2563eb","#7c3aed","#c9922a",
+  "#0f766e","#db4498","#d97706","#0891b2","#65a30d"
+];
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/* ─── POPULATE DROPDOWNS ─── */
+function populateDropdowns(){
+  const now = new Date();
+  const currYear = now.getFullYear();
+  const years = [];
+  for(let y=currYear-5; y<=currYear+20; y++) years.push(y);
+
+  ['fStartMonth','fEndMonth'].forEach(id=>{
+    const sel = document.getElementById(id);
+    sel.innerHTML = MONTHS.map((m,i)=>
+      `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`
+    ).join('');
+  });
+
+  ['fStartYear','fEndYear'].forEach(id=>{
+    const sel = document.getElementById(id);
+    sel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    sel.value = currYear;
+  });
+
+  // default start = current month, end = 3 months ahead
+  document.getElementById('fStartMonth').value = String(now.getMonth()+1).padStart(2,'0');
+  const endDate = new Date(now.getFullYear(), now.getMonth()+3, 1);
+  document.getElementById('fEndMonth').value = String(endDate.getMonth()+1).padStart(2,'0');
+  document.getElementById('fEndYear').value   = endDate.getFullYear();
+}
+
+/* ─── HELPERS ─── */
+function monthDiff(a,b){
+  return (b.getFullYear()-a.getFullYear())*12 + b.getMonth()-a.getMonth();
+}
+function toDate(ym){ return new Date(ym+"-01"); }
+function fmtMonth(ym){
+  const d = toDate(ym);
+  return MONTHS[d.getMonth()]+' '+d.getFullYear();
+}
+function ymFromSelects(monthId,yearId){
+  return document.getElementById(yearId).value
+    +'-'+ document.getElementById(monthId).value;
+}
+
+/* ─── RENDER CHART ─── */
+function renderChart(){
+  const chart = document.getElementById('gantt-chart');
+  if(!tasks.length){
+    chart.innerHTML = `<div class="empty-state"><p>No tasks yet — add one above.</p></div>`;
+    renderTable(); return;
+  }
+
+  const starts = tasks.map(t=>toDate(t.start));
+  const ends   = tasks.map(t=>toDate(t.end));
+  let minD = new Date(Math.min(...starts));
+  let maxD = new Date(Math.max(...ends));
+  minD.setMonth(minD.getMonth()-1);
+  maxD.setMonth(maxD.getMonth()+1);
+  const totalMonths = monthDiff(minD,maxD)+1;
+
+  // header months
+  let monthsHTML = '';
+  let cur = new Date(minD);
+  const nowYM = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+  for(let i=0;i<totalMonths;i++){
+    const ym = cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
+    const isCurrent = ym===nowYM;
+    monthsHTML += `<div class="month-cell${isCurrent?' current-month':''}">${MONTHS[cur.getMonth()]} '${String(cur.getFullYear()).slice(2)}</div>`;
+    cur.setMonth(cur.getMonth()+1);
+  }
+
+  let html = `
+    <div class="gantt-header">
+      <div class="gantt-header-left">Research Tasks</div>
+      <div class="gantt-header-right">
+        <div class="timeline">${monthsHTML}</div>
+      </div>
+    </div>`;
+
+  tasks.forEach((t,idx)=>{
+    const startD = toDate(t.start);
+    const endD   = toDate(t.end);
+    const off     = monthDiff(minD, startD);
+    const dur     = monthDiff(startD, endD)+1;
+    const left    = (off/totalMonths)*100;
+    const width   = (dur/totalMonths)*100;
+
+    html += `
+      <div class="task-row">
+        <div class="task-name">
+          <div class="task-num-badge">TASK ${String(t.num).padStart(2,'0')}</div>
+          <div class="task-title">${escHtml(t.name)}</div>
+          <div class="task-date">${fmtMonth(t.start)} → ${fmtMonth(t.end)}</div>
+        </div>
+        <div class="task-timeline" style="--cols:${totalMonths}">
+          <div class="task-bar" style="left:${left}%;width:${width}%;background:${t.color};"></div>
+        </div>
+      </div>`;
+  });
+
+  chart.innerHTML = html;
+  renderTable();
+  updateNextNum();
+}
+
+/* ─── RENDER TABLE ─── */
+function renderTable(){
+  const tbody = document.getElementById('taskTable');
+  const badge = document.getElementById('taskCountBadge');
+  badge.textContent = tasks.length+(tasks.length===1?' task':' tasks');
+
+  if(!tasks.length){
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--ink-ghost);font-family:'DM Mono',monospace;font-size:13px;padding:30px">No tasks yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = tasks.map((t,i)=>`
+    <tr>
+      <td><span class="mono">${String(t.num).padStart(2,'0')}</span></td>
+      <td><span class="color-swatch" style="background:${t.color}"></span>${escHtml(t.name)}</td>
+      <td class="mono">${fmtMonth(t.start)}</td>
+      <td class="mono">${fmtMonth(t.end)}</td>
+      <td><button class="remove-btn" onclick="removeTask(${i})">Remove</button></td>
+    </tr>`).join('');
+}
+
+/* ─── AUTO NEXT NUM ─── */
+function updateNextNum(){
+  if(!tasks.length){ document.getElementById('fNum').value=1; return; }
+  const max = Math.max(...tasks.map(t=>t.num));
+  document.getElementById('fNum').value = max+1;
+}
+
+/* ─── ADD TASK ─── */
+function addTask(){
+  const num  = parseInt(document.getElementById('fNum').value)||1;
+  const name = document.getElementById('fName').value.trim();
+  const start = ymFromSelects('fStartMonth','fStartYear');
+  const end   = ymFromSelects('fEndMonth','fEndYear');
+  if(!name){ alert('Please enter a task name.'); return; }
+  if(start>end){ alert('End month must be same or after start month.'); return; }
+
+  const color = PALETTE[tasks.length % PALETTE.length];
+  tasks.push({ num, name, start, end, color });
+  tasks.sort((a,b)=>a.num-b.num || a.start.localeCompare(b.start));
+  renderChart();
+  document.getElementById('fName').value='';
+}
+
+/* ─── REMOVE ─── */
+function removeTask(i){
+  tasks.splice(i,1);
+  renderChart();
+}
+
+/* ─── ESCAPE HTML ─── */
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── EXPORT ─── */
+async function exportAs(type){
+  const overlay = document.getElementById('savingOverlay');
+  const label   = document.getElementById('savingLabel');
+  overlay.classList.add('active');
+  label.textContent = 'Rendering chart…';
+
+  await new Promise(r=>setTimeout(r,80));
+
+  const area = document.getElementById('capture-area');
+  const canvas = await html2canvas(area,{
+    scale: 3,
+    backgroundColor:'#faf8f5',
+    useCORS: true,
+    logging: false
+  });
+
+  if(type==='pdf'){
+    label.textContent = 'Building PDF…';
+    await new Promise(r=>setTimeout(r,30));
+    const { jsPDF } = window.jspdf;
+    const w = canvas.width, h = canvas.height;
+    const pxPerPt = 72/96;
+    const pdfW = w*pxPerPt/3, pdfH = h*pxPerPt/3;
+    const doc = new jsPDF({ orientation: pdfW>pdfH?'l':'p', unit:'pt', format:[pdfW,pdfH] });
+    doc.addImage(canvas.toDataURL('image/png'),'PNG',0,0,pdfW,pdfH);
+    doc.save('research-timeline.pdf');
+  } else {
+    label.textContent = 'Saving image…';
+    const mime = type==='jpeg'?'image/jpeg':'image/png';
+    const ext  = type==='jpeg'?'jpeg':'png';
+    const link = document.createElement('a');
+    link.download = `research-timeline.${ext}`;
+    link.href = canvas.toDataURL(mime, 1.0);
+    link.click();
+  }
+
+  overlay.classList.remove('active');
+}
+
+/* ─── INIT ─── */
+populateDropdowns();
+renderChart();
+</script>
+</body>
+</html>
